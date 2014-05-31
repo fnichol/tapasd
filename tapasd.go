@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -30,33 +29,14 @@ const (
 )
 
 func init() {
-	defUser := os.Getenv("TAPASD_USER")
-	if defUser == "" {
-		defUser = "[required]"
-	}
-	defPass := os.Getenv("TAPASD_PASS")
-	if defPass == "" {
-		defPass = "[required]"
-	}
-	defDataDir := os.Getenv("TAPASD_DATA")
-	if defDataDir == "" {
-		defDataDir, _ = os.Getwd()
-	}
-	defConcur, _ := strconv.ParseInt(os.Getenv("TAPASD_CONCURRENCY"), 10, 0)
-	if defConcur == 0 {
-		defConcur = 4
-	}
-	defInterval, _ := strconv.ParseInt(os.Getenv("TAPASD_INTERVAL"), 10, 0)
-	if defInterval == 0 {
-		defInterval = 60 * 60 * 6
-	}
+	defDataDir, _ := os.Getwd()
 
-	flag.StringVar(&user, "user", defUser, "user for RubyTapas account (required)")
-	flag.StringVar(&pass, "password", defPass, "pass for RubyTapas account (required)")
+	flag.StringVar(&user, "user", "[required]", "user for RubyTapas account (required)")
+	flag.StringVar(&pass, "pass", "[required]", "pass for RubyTapas account (required)")
 	flag.StringVar(&dataDir, "data", defDataDir, "data directory for downloads")
-	flag.IntVar(&concurrency, "concurrency", int(defConcur), "data directory for downloads")
+	flag.IntVar(&concurrency, "concurrency", 4, "data directory for downloads")
 	flag.BoolVar(&daemon, "daemon", false, "daemon mode which checks feed periodically")
-	flag.IntVar(&interval, "interval", int(defInterval), "number of seconds to sleep between reprocessing")
+	flag.IntVar(&interval, "interval", 60*60*6, "number of seconds to sleep between reprocessing")
 }
 
 type Enclosure struct {
