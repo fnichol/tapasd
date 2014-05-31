@@ -1,3 +1,4 @@
+// This is the main package for the `tapasd` application.
 package main
 
 import (
@@ -55,6 +56,7 @@ func main() {
 	}
 }
 
+// generate creates the collection of episodes to be downloaded.
 func generate(urls chan Item, user string, pass string) {
 	defer close(urls)
 	request, err := http.NewRequest("GET", feedUrl, nil)
@@ -87,6 +89,7 @@ func generate(urls chan Item, user string, pass string) {
 	}
 }
 
+// process works through the episode collection with a worker pool.
 func process(items chan Item, concurrency int, user string, pass string, dataDir string) {
 	var wg sync.WaitGroup
 	for i := 1; i <= concurrency; i++ {
@@ -102,6 +105,7 @@ func process(items chan Item, concurrency int, user string, pass string, dataDir
 	wg.Wait()
 }
 
+// download will download an episode movie file and verify its size.
 func download(worker int, item Item, user string, pass string, dataDir string) {
 	url, err := url.Parse(item.Enclosure.Url)
 	if err != nil {
@@ -162,6 +166,8 @@ func download(worker int, item Item, user string, pass string, dataDir string) {
 	log.Printf("[%02d] Download complete: %s\n", worker, fname)
 }
 
+// slugify takes a string and returns a sanitized string suitable for creating
+// filenames and web site URL slugs.
 func slugify(title string) string {
 	invalidSlugPatterns := regexp.MustCompile(`[^a-z0-9 _-]`)
 	whitespacePatterns := regexp.MustCompile(`\s+`)
