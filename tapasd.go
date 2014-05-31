@@ -15,29 +15,7 @@ import (
 	"time"
 )
 
-var (
-	user        string
-	pass        string
-	dataDir     string
-	concurrency int
-	daemon      bool
-	interval    int
-)
-
-const (
-	feedUrl = "https://rubytapas.dpdcart.com/feed"
-)
-
-func init() {
-	defDataDir, _ := os.Getwd()
-
-	flag.StringVar(&user, "user", "[required]", "user for RubyTapas account (required)")
-	flag.StringVar(&pass, "pass", "[required]", "pass for RubyTapas account (required)")
-	flag.StringVar(&dataDir, "data", defDataDir, "data directory for downloads")
-	flag.IntVar(&concurrency, "concurrency", 4, "data directory for downloads")
-	flag.BoolVar(&daemon, "daemon", false, "daemon mode which checks feed periodically")
-	flag.IntVar(&interval, "interval", 60*60*6, "number of seconds to sleep between reprocessing")
-}
+const feedUrl = "https://rubytapas.dpdcart.com/feed"
 
 type Enclosure struct {
 	Url    string `xml:"url,attr"`
@@ -49,7 +27,7 @@ type Item struct {
 	Enclosure Enclosure `xml:"enclosure"`
 }
 
-func download(worker int, item Item) {
+func download(worker int, item Item, user string, pass string, dataDir string) {
 	url, err := url.Parse(item.Enclosure.Url)
 	if err != nil {
 		log.Fatal(err)
@@ -109,7 +87,7 @@ func download(worker int, item Item) {
 	log.Printf("[%02d] Download complete: %s\n", worker, fname)
 }
 
-func generate(urls chan Item) {
+func generate(urls chan Item, user string, pass string) {
 	defer close(urls)
 	request, err := http.NewRequest("GET", feedUrl, nil)
 	request.SetBasicAuth(user, pass)
@@ -141,7 +119,7 @@ func generate(urls chan Item) {
 	}
 }
 
-func process(items chan Item, maxWorkers int) {
+func process(items chan Item, concurrency int, user string, pass string, dataDir string) {
 	var wg sync.WaitGroup
 	for i := 1; i <= concurrency; i++ {
 		wg.Add(1)
@@ -149,8 +127,7 @@ func process(items chan Item, maxWorkers int) {
 		go func() {
 			defer wg.Done()
 			for item := range items {
-				/* log.Printf("[%02d] Gonna download %s\n", worker, item) */
-				download(worker, item)
+				download(worker, item, user, pass, dataDir)
 			}
 		}()
 	}
@@ -168,21 +145,28 @@ func slugify(title string) string {
 }
 
 func main() {
+	defDataDir, _ := os.Getwd()
+	user := flag.String("user", "[required]", "user for RubyTapas account (required)")
+	pass := flag.String("pass", "[required]", "pass for RubyTapas account (required)")
+	dataDir := flag.String("data", defDataDir, "data directory for downloads")
+	concurrency := flag.Int("concurrency", 4, "data directory for downloads")
+	daemon := flag.Bool("daemon", false, "daemon mode which checks feed periodically")
+	interval := flag.Int("interval", 60*60*6, "number of seconds to sleep between reprocessing")
 	flag.Parse()
-	if user == "[required]" || pass == "[required]" {
+	if *user == "[required]" || *pass == "[required]" {
 		log.Fatal("-user and -pass flags are required")
 	}
 
 	for {
 		items := make(chan Item)
-		go generate(items)
-		process(items, 4)
+		go generate(items, *user, *pass)
+		process(items, *concurrency, *user, *pass, *dataDir)
 		log.Println("Processing and downloading complete")
-		if !daemon {
+		if !*daemon {
 			break
 		}
-		log.Printf("Sleeping for %d seconds\n", interval)
-		timer := time.NewTimer(time.Duration(interval) * time.Second)
+		log.Printf("Sleeping for %d seconds\n", *interval)
+		timer := time.NewTimer(time.Duration(*interval) * time.Second)
 		<-timer.C
 		log.Println("Waking to process and download")
 	}
