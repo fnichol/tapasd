@@ -38,7 +38,7 @@ func main() {
 	interval := flag.Int("interval", 60*60*6, "number of seconds to sleep between reprocessing")
 	flag.Parse()
 	if *user == "[required]" || *pass == "[required]" {
-		log.Fatal("-user and -pass flags are required")
+		log.Fatalln("-user and -pass flags are required")
 	}
 
 	for {
@@ -64,11 +64,11 @@ func generate(urls chan Item, user string, pass string) {
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer response.Body.Close()
 	if response.StatusCode != 200 {
-		log.Fatalf("URL %s returned status: %s\n", feedUrl, response.Status)
+		log.Fatalln("URL", feedUrl, "returned status:", response.Status)
 	}
 
 	decoder := xml.NewDecoder(response.Body)
@@ -94,11 +94,10 @@ func process(items chan Item, concurrency int, user string, pass string, dataDir
 	var wg sync.WaitGroup
 	for i := 1; i <= concurrency; i++ {
 		wg.Add(1)
-		worker := i
 		go func() {
 			defer wg.Done()
 			for item := range items {
-				download(worker, item, user, pass, dataDir)
+				download(item, user, pass, dataDir)
 			}
 		}()
 	}
@@ -106,41 +105,46 @@ func process(items chan Item, concurrency int, user string, pass string, dataDir
 }
 
 // download will download an episode movie file and verify its size.
-func download(worker int, item Item, user string, pass string, dataDir string) {
+func download(item Item, user string, pass string, dataDir string) {
 	url, err := url.Parse(item.Enclosure.Url)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
-	fname := path.Join(dataDir, "rubytapas-"+slugify(item.Title)+path.Ext(url.Path))
+	fname := path.Join(
+		dataDir,
+		"rubytapas-"+slugify(item.Title)+path.Ext(url.Path),
+	)
 
 	existing, err := os.Stat(fname)
 	if !os.IsNotExist(err) {
 		if existing.Size() != item.Enclosure.Length {
-			log.Printf(
-				"[%02d] Deleting and retrying %s, incorrect file size (expected: %d, actual: %d)",
-				worker,
+			log.Println(
+				"Deleting and retrying",
 				fname,
+				"(incorrect file size, expected:",
 				item.Enclosure.Length,
+				", actual:",
 				existing.Size(),
+				")",
 			)
 			os.Remove(fname)
 		} else {
-			log.Printf("[%02d] Skipping %s", worker, path.Base(fname))
+			log.Println("Skipping", path.Base(fname))
 			return
 		}
 	}
 
-	log.Printf("[%02d] Downloading: %s to %s\n", worker, url.String(), fname)
+	log.Println("Downloading", url.String(), "to", fname)
 	request, err := http.NewRequest("GET", url.String(), nil)
 	request.SetBasicAuth(user, pass)
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer response.Body.Close()
 	if response.StatusCode != 200 {
-		log.Printf("[%02d] URL %s returned status: %s\n", worker, url, response.Status)
+		log.Println("URL", url, "returned status:", response.Status)
 		return
 	}
 
@@ -150,32 +154,34 @@ func download(worker int, item Item, user string, pass string, dataDir string) {
 	}
 	temp, err := os.Create(tempfile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer temp.Close()
 	defer os.Remove(tempfile)
 
 	written, err := io.Copy(temp, response.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	if written != item.Enclosure.Length {
-		log.Printf(
-			"[%02d] Deleting %s, incorrect file size (expected: %d, actual: %d)",
-			worker,
+		log.Println(
+			"Deleting",
 			fname,
+			"(incorrect file size, expected:",
 			item.Enclosure.Length,
+			", actual:",
 			written,
+			")",
 		)
 		os.Remove(fname)
 		return
 	}
 	err = os.Rename(tempfile, fname)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
-	log.Printf("[%02d] Download complete: %s\n", worker, path.Base(fname))
+	log.Printf("Download complete: %s\n", path.Base(fname))
 }
 
 // slugify takes a string and returns a sanitized string suitable for creating
