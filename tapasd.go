@@ -116,10 +116,16 @@ func download(worker int, item Item, user string, pass string, dataDir string) {
 	existing, err := os.Stat(fname)
 	if !os.IsNotExist(err) {
 		if existing.Size() != item.Enclosure.Length {
-			log.Printf("[%02d] Deleting and retrying %s, incorrect file size (expected: %d, actual: %d)", worker, fname, item.Enclosure.Length, existing.Size())
+			log.Printf(
+				"[%02d] Deleting and retrying %s, incorrect file size (expected: %d, actual: %d)",
+				worker,
+				fname,
+				item.Enclosure.Length,
+				existing.Size(),
+			)
 			os.Remove(fname)
 		} else {
-			log.Printf("[%02d] Skipping %s", worker, fname)
+			log.Printf("[%02d] Skipping %s", worker, path.Base(fname))
 			return
 		}
 	}
@@ -154,7 +160,13 @@ func download(worker int, item Item, user string, pass string, dataDir string) {
 		log.Fatal(err)
 	}
 	if written != item.Enclosure.Length {
-		log.Printf("[%02d] Deleting %s, incorrect file size (expected: %d, actual: %d)", worker, fname, item.Enclosure.Length, written)
+		log.Printf(
+			"[%02d] Deleting %s, incorrect file size (expected: %d, actual: %d)",
+			worker,
+			fname,
+			item.Enclosure.Length,
+			written,
+		)
 		os.Remove(fname)
 		return
 	}
@@ -163,7 +175,7 @@ func download(worker int, item Item, user string, pass string, dataDir string) {
 		log.Fatal(err)
 	}
 
-	log.Printf("[%02d] Download complete: %s\n", worker, fname)
+	log.Printf("[%02d] Download complete: %s\n", worker, path.Base(fname))
 }
 
 // slugify takes a string and returns a sanitized string suitable for creating
