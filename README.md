@@ -2,6 +2,8 @@
 
 A concurrent [Ruby Tapas][ruby_tapas] episode downloader, curiously written in Go.
 
+[![baby-gopher](https://raw2.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png)](http://www.babygopher.org)
+
 ## Usage
 
 To perform a download of all episodes in the feed to the current directory with 4 workers which re-checks every 6 hours, you only need to provide 2 things: a username and password for the DPD site:
