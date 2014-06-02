@@ -34,8 +34,8 @@ func main() {
 	pass := flag.String("pass", "[required]", "pass for RubyTapas account (required)")
 	dataDir := flag.String("data", defDataDir, "data directory for downloads")
 	concurrency := flag.Int("concurrency", 4, "data directory for downloads")
-	daemon := flag.Bool("daemon", false, "daemon mode which checks feed periodically")
-	interval := flag.Int("interval", 60*60*6, "number of seconds to sleep between reprocessing")
+	oneshot := flag.Bool("oneshot", false, "check and download once, then quit")
+	interval := flag.Int("interval", 60*60*6, "number of seconds to sleep between retrying")
 	flag.Parse()
 	if *user == "[required]" || *pass == "[required]" {
 		log.Fatalln("-user and -pass flags are required")
@@ -46,7 +46,8 @@ func main() {
 		go generate(items, *user, *pass)
 		process(items, *concurrency, *user, *pass, *dataDir)
 		log.Println("Processing and downloading complete")
-		if !*daemon {
+		if *oneshot {
+			log.Println("Shutting down (one-shot mode)")
 			break
 		}
 		log.Printf("Sleeping for %d seconds\n", *interval)
