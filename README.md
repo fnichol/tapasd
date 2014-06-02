@@ -72,4 +72,4 @@ MIT (see [License.txt][license])
 [fnichol]:	https://github.com/fnichol
 [repo]:			https://github.com/fnichol/tapasd
 [issues]:		https://github.com/fnichol/tapasd/issues
-[license]:	https://github.com/fnichol/tapasd/blob/master/LICENSE.txt
+[license]:	https://github.com/fnichol/tapasd/blob/master/License.txt
