@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+if [ ! -h gopath/src/github.com/fnichol/tapasd ]; then
+  mkdir -p gopath/src/github.com/fnichol/
+  ln -s ../../../.. gopath/src/github.com/fnichol/tapasd
+fi
+
+export GOBIN=${PWD}/bin
+export GOPATH=${PWD}/gopath
+
+go install github.com/fnichol/tapasd
