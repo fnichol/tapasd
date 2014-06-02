@@ -1,6 +1,13 @@
 # tapasd
 
-A concurrent [Ruby Tapas][ruby_tapas] episode downloader, curiously written in Go.
+A concurrent [Ruby Tapas][ruby_tapas] episode downloader, curiously written in Go. tapasd is focused on fetching the movie files for local mirroring and loading onto tablets for viewing later offline.
+
+Features:
+
+* Simple runtime dependencies--in other words, none
+* Architected as a [twelve-factor app][12factor], therefore easy to deploy with [Docker][docker]
+* Defaults to a process which rechecks the XML feed every 6 hours
+* Maintains no state except for the downloaded content
 
 [![baby-gopher](https://raw2.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png)](http://www.babygopher.org)
 
@@ -76,4 +83,6 @@ MIT (see [License.txt][license])
 [issues]:   https://github.com/fnichol/tapasd/issues
 [license]:  https://github.com/fnichol/tapasd/blob/master/License.txt
 
+[12factor]:   http://12factor.net/
+[docker]:     https://www.docker.io/
 [ruby_tapas]: http://www.rubytapas.com/
