@@ -1,6 +1,6 @@
 # tapasd
 
-A concurrent Ruby Tapas episode downloader, curiously written in Go.
+A concurrent [Ruby Tapas][ruby_tapas] episode downloader, curiously written in Go.
 
 ## Usage
 
@@ -69,7 +69,9 @@ Created and maintained by [Fletcher Nichol][fnichol] (<fnichol@nichol.ca>).
 
 MIT (see [License.txt][license])
 
-[fnichol]:	https://github.com/fnichol
-[repo]:			https://github.com/fnichol/tapasd
-[issues]:		https://github.com/fnichol/tapasd/issues
-[license]:	https://github.com/fnichol/tapasd/blob/master/License.txt
+[fnichol]:  https://github.com/fnichol
+[repo]:     https://github.com/fnichol/tapasd
+[issues]:   https://github.com/fnichol/tapasd/issues
+[license]:  https://github.com/fnichol/tapasd/blob/master/License.txt
+
+[ruby_tapas]: http://www.rubytapas.com/
