@@ -13,6 +13,8 @@ Features:
 
 ## Usage
 
+### Vanilla
+
 To perform a download of all episodes in the feed to the current directory with 4 workers which re-checks every 6 hours, you only need to provide 2 things: a username and password for the DPD site:
 
 ```sh
@@ -37,6 +39,56 @@ Usage of tapasd:
   -user="[required]": user for RubyTapas account (required)
 ```
 
+### Docker
+
+In our example, we'll use a [data container pattern](http://docs.docker.io/use/working_with_volumes/) to persist the downloaded episodes between re-launching of `tapasd` services. First, we'll create a named container (`tapasd_data`) with a volume of `/data`:
+
+```sh
+docker run -v /data --name tapasd_data busybox true
+```
+
+Next, we'll launch a `tapasd` service, mounting in the shared volume from our `tapasd_data` container. For good measure, we'll also give this container a name of `tapasd`:
+
+```sh
+docker run -d --volumes-from tapasd_data --name tapasd fnichol/tapasd -user="user@example.com" -pass="secret"
+```
+
+Finally, if you want to check on its progress, simply follow the log output from the `tapasd` container:
+
+```sh
+docker logs -f tapasd
+```
+
+For a bonus, you can launch an interactive container with the data mounted in `/data` with:
+
+```sh
+docker run --rm -t -i --volumes-from tapasd_data busybox sh
+```
+
+Killing off the `tapasd` service is easy:
+
+```sh
+docker kill tapasd
+```
+
+If you wanted to re-start it at a later date:
+
+```sh
+docker start tapasd
+```
+
+And to remove the `tapasd` container:
+
+```sh
+docker rm tapasd
+```
+
+Again, your data is persisted in the volume associated with the `tapasd_data` container. To free up disk space by removing the data, simply:
+
+```sh
+docker rm tapasd_data
+```
+
 ## Installation
 
 ### Source
@@ -57,6 +109,14 @@ cd $GOPATH/src/github.com/fnichol/tapasd
 ```
 
 This will generate a binary called `./bin/tapasd`.
+
+### Docker
+
+A Docker trusted build exists at [fnichol/tapasd](https://index.docker.io/u/fnichol/tapasd/), and can be pulled down with:
+
+```sh
+docker pull fnichol/tapasd
+```
 
 ## Development
 
